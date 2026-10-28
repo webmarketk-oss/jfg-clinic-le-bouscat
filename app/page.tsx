@@ -212,8 +212,9 @@ export default function Home() {
               last_name: nom,
               email: payload.email,
               phone: payload.phone,
-              offre: "Diagnostic complet + soin découverte dès 80€ JFG Clinic Le Bouscat",
-              commentaire: `Visage — zones : ${selectedZones.join(", ") || "non précisé"} | Contact message : ${messageOptIn}`,
+              offre: "Visage 80",
+              axe: "Visage",
+              commentaire: `Visage 80 — soin découverte dès 80€ — zones : ${selectedZones.join(", ") || "non précisé"} | Contact message : ${messageOptIn}`,
             }),
           },
         );
