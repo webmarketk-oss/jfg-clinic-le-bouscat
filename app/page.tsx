@@ -97,6 +97,15 @@ function track(eventName: string, params?: Record<string, unknown>) {
   window.fbq?.("track", eventName, params);
 }
 
+function postJson(url: string, body: unknown) {
+  void fetch(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+    keepalive: true,
+  }).catch(() => {});
+}
+
 function getTrackingParams() {
   if (typeof window === "undefined") return {};
   const params = new URLSearchParams(window.location.search);
@@ -190,37 +199,24 @@ export default function Home() {
 
     setIsSubmitting(true);
     try {
-      if (LEAD_WEBHOOK_URL) {
-        await fetch(LEAD_WEBHOOK_URL, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
-        });
-      }
-
       const nameParts = payload.full_name.trim().split(/\s+/).filter(Boolean);
       const prenom = nameParts[0] ?? "";
       const nom = nameParts.slice(1).join(" ");
-      try {
-        await fetch(
-          "https://www.bookeai.fr/api/leads?center=jfg-clinic-le-bouscat&source=landing",
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              first_name: prenom,
-              last_name: nom,
-              email: payload.email,
-              phone: payload.phone,
-              offre: "Visage 80",
-              axe: "Visage",
-              commentaire: `Visage 80 — soin découverte dès 80€ — zones : ${selectedZones.join(", ") || "non précisé"} | Contact message : ${messageOptIn}`,
-            }),
-          },
-        );
-      } catch {
-        // Bookea ne doit pas bloquer la demande Le Bouscat.
+      if (LEAD_WEBHOOK_URL) {
+        postJson(LEAD_WEBHOOK_URL, payload);
       }
+      postJson(
+        "https://www.bookeai.fr/api/leads?center=jfg-clinic-le-bouscat&source=landing",
+        {
+          first_name: prenom,
+          last_name: nom,
+          email: payload.email,
+          phone: payload.phone,
+          offre: "Visage 80",
+          axe: "Visage",
+          commentaire: `Visage 80 — soin découverte dès 80€ — zones : ${selectedZones.join(", ") || "non précisé"} | Contact message : ${messageOptIn}`,
+        },
+      );
 
       track("Lead", {
         content_name: "Diagnostic + soin découverte dès 80€",
@@ -475,3 +471,4 @@ export default function Home() {
     </main>
   );
 }
+
